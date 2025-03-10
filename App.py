@@ -29,14 +29,19 @@ new_data = pd.DataFrame({
 })
 
 # Ensure the new data has the same columns as expected (both the same features and the correct order)
-if set(new_data.columns) == set(expected_columns):
-    new_data = new_data[expected_columns]  # Reorder the columns to match the training data order
-else:
-    missing_columns = set(expected_columns) - set(new_data.columns)
+missing_columns = set(expected_columns) - set(new_data.columns)
+if missing_columns:
     st.error(f"Missing columns in the new data: {missing_columns}")
     raise ValueError(f"Missing columns in the new data: {missing_columns}")
+else:
+    new_data = new_data[expected_columns]  # Reorder the columns to match the training data order
 
-# Make prediction without scaling
+# Ensure the number of features in the new data matches what the model expects
+if new_data.shape[1] != len(expected_columns):
+    st.error(f"Expected {len(expected_columns)} features, but got {new_data.shape[1]} features in the new data.")
+    raise ValueError(f"Expected {len(expected_columns)} features, but got {new_data.shape[1]} features in the new data.")
+
+# Make prediction
 prediction = model.predict(new_data)
 
 # Display prediction
