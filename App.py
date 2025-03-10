@@ -44,12 +44,13 @@ input_data = pd.DataFrame({
 })
 
 # Ensure the input data has the correct column order and includes all the required features
+input_data = input_data[expected_columns]  # Reorder columns to match the training data order
+
+# Handle the missing columns and check if the columns match
 missing_columns = set(expected_columns) - set(input_data.columns)
 if missing_columns:
     st.error(f"Missing columns in the input data: {missing_columns}")
     raise ValueError(f"Missing columns in the input data: {missing_columns}")
-else:
-    input_data = input_data[expected_columns]  # Reorder columns to match the training data order
 
 # Scale the input data using the preloaded scaler
 input_data_scaled = scaler.transform(input_data)
