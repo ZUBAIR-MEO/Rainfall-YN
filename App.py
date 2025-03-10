@@ -2,8 +2,8 @@ import pandas as pd
 import joblib
 
 # Load the model and scaler
-model = joblib.load('/kaggle/working/rainfall_model.pkl')
-scaler = joblib.load('/kaggle/working/scaler.pkl')
+model = joblib.load('rainfall_model.pkl')
+scaler = joblib.load('scaler.pkl')
 
 # Define the column names used during model training
 expected_columns = ['temparature', 'cloud', 'day', 'maxtemp', 'winddirection', 'humidity', 'pressure', 'sunshine']
