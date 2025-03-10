@@ -2,6 +2,7 @@ import joblib
 import pandas as pd
 import streamlit as st
 import os
+import numpy as np
 
 # Set paths for the model and scaler
 model_path = 'rainfall_model.pkl'
@@ -43,20 +44,34 @@ input_data = pd.DataFrame({
 # Ensure the input data has the correct column order
 input_data = input_data[selected_columns]
 
+# Check if the column names match the expected columns used during training
+if list(input_data.columns) != selected_columns:
+    st.error("The column names in the input data do not match the expected column names.")
+    raise ValueError("Column names mismatch")
+
 # Scale the input data using the preloaded scaler
-input_data_scaled = scaler.transform(input_data)
+try:
+    input_data_scaled = scaler.transform(input_data)
+except ValueError as e:
+    st.error(f"Error during scaling: {e}")
+    raise e
 
 # Make the prediction using the model
-prediction = model.predict(input_data_scaled)
-
-# Ensure the prediction is a scalar value
-if isinstance(prediction, (list, np.ndarray)) and prediction.size > 0:
-    prediction_value = prediction[0]  # Get the scalar value from the prediction array
-else:
-    st.error("Prediction result is invalid or empty.")
-    prediction_value = None
-
-# Display the result
-if prediction_value is not None:
-    st.header("Prediction Result:")
-    st.write(f"Predicted Rainfall: {prediction_value:.2f} mm")
+try:
+    prediction = model.predict(input_data_scaled)
+    
+    # Ensure the prediction is a scalar value
+    if isinstance(prediction, (np.ndarray)) and prediction.size > 0:
+        prediction_value = prediction[0]  # Get the scalar value from the prediction array
+    else:
+        st.error("Prediction result is invalid or empty.")
+        prediction_value = None
+    
+    # Display the result
+    if prediction_value is not None:
+        st.header("Prediction Result:")
+        st.write(f"Predicted Rainfall: {prediction_value:.2f} mm")
+    
+except Exception as e:
+    st.error(f"Error during prediction: {e}")
+    raise e
