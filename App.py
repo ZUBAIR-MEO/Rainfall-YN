@@ -26,6 +26,7 @@ st.title('Rainfall Prediction App')
 # User inputs for the 5 variables
 st.header("Enter Weather Data:")
 
+# Input fields for the relevant variables (5 variables)
 temparature = st.number_input("Temperature (°C)", min_value=-50.0, max_value=50.0, value=22.5)
 cloud = st.number_input("Cloudiness", min_value=0, max_value=8, value=1)
 day = st.number_input("Day (1=Monday, ..., 7=Sunday)", min_value=1, max_value=7, value=2)
@@ -43,11 +44,6 @@ input_data = pd.DataFrame({
 
 # Ensure the input data has the correct column order
 input_data = input_data[selected_columns]
-
-# Check if the column names match the expected columns used during training
-if list(input_data.columns) != selected_columns:
-    st.error("The column names in the input data do not match the expected column names.")
-    raise ValueError("Column names mismatch")
 
 # Scale the input data using the preloaded scaler
 try:
