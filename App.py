@@ -1,19 +1,18 @@
 import joblib
 import pandas as pd
 import streamlit as st
+import os
 
-# Load model and scaler
+# Load model
 model_path = 'rainfall_model.pkl'
-scaler_path = 'scaler.pkl'
 
-# Check if model and scaler files exist before loading
-if os.path.exists(model_path) and os.path.exists(scaler_path):
+# Check if model file exists before loading
+if os.path.exists(model_path):
     model = joblib.load(model_path)
-    scaler = joblib.load(scaler_path)
-    st.write("Model and scaler loaded successfully.")
+    st.write("Model loaded successfully.")
 else:
-    st.error(f"Model or scaler file not found at {model_path} or {scaler_path}")
-    raise FileNotFoundError(f"Model or scaler file not found at {model_path} or {scaler_path}")
+    st.error(f"Model file not found at {model_path}")
+    raise FileNotFoundError(f"Model file not found at {model_path}")
 
 # Define expected columns (from the model's training data)
 expected_columns = ['temparature', 'cloud', 'day', 'maxtemp', 'winddirection', 'pressure', 'humidity']
@@ -37,11 +36,8 @@ else:
     st.error(f"Missing columns in the new data: {missing_columns}")
     raise ValueError(f"Missing columns in the new data: {missing_columns}")
 
-# Preprocess the new data (standardize using the same scaler)
-new_data_scaled = scaler.transform(new_data)
-
-# Make prediction
-prediction = model.predict(new_data_scaled)
+# Make prediction without scaling
+prediction = model.predict(new_data)
 
 # Display prediction
 st.write(f"Predicted rainfall: {prediction[0]}")
