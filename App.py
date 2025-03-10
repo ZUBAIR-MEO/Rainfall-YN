@@ -5,8 +5,8 @@ import joblib
 from sklearn.preprocessing import StandardScaler
 
 # Load pre-trained model and scaler
-model = joblib.load('/kaggle/working/rainfall_model.pkl')
-scaler = joblib.load('/kaggle/working/scaler.pkl')
+model = joblib.load('rainfall_model.pkl')
+scaler = joblib.load('scaler.pkl')
 
 # Title of the app
 st.title('Rainfall Prediction Dashboard')
