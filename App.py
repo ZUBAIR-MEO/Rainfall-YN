@@ -4,7 +4,7 @@ import streamlit as st
 import os
 
 # Load model
-model_path = 'rainfall_model.pkl'
+model_path = '/kaggle/working/rainfall_model.pkl'
 
 # Check if model file exists before loading
 if os.path.exists(model_path):
