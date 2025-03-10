@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 
 # Load weather data
 data = {
@@ -20,8 +23,29 @@ data = {
 # Convert the dictionary into a DataFrame
 df = pd.DataFrame(data)
 
+# Feature engineering for rain prediction
+df['rain'] = df['rainfall'].apply(lambda x: 1 if x > 0 else 0)  # Binary rain column (1 for rain, 0 for no rain)
+
+# Define features and target for the model
+features = ['temperature', 'humidity', 'sunshine', 'pressure', 'maxtemp', 'mintemp', 'dewpoint']
+X = df[features]  # Features
+y = df['rain']    # Target: rain (1 or 0)
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+
+# Train a RandomForest model for rain prediction
+model = RandomForestClassifier(random_state=42)
+model.fit(X_train, y_train)
+
+# Make predictions
+y_pred = model.predict(X_test)
+
+# Calculate accuracy
+accuracy = accuracy_score(y_test, y_pred)
+
 # Set the title of the app
-st.title("Weather Data Visualization")
+st.title("Weather Data Visualization and Rain Prediction")
 
 # Show raw data
 st.subheader("Raw Weather Data")
@@ -82,3 +106,30 @@ st.write(cloud_data)
 st.subheader("Weather Forecast Summary")
 weather_summary = df[['day', 'temperature', 'humidity', 'cloud', 'rainfall', 'sunshine']]
 st.write(weather_summary)
+
+# Show model accuracy
+st.subheader("Rain Prediction Model Accuracy")
+st.write(f"Accuracy of Rain Prediction Model: {accuracy * 100:.2f}%")
+
+# Input for predicting rain on a new day
+st.subheader("Predict Rain on New Day")
+
+temperature_input = st.number_input("Enter temperature (°C):", min_value=-30, max_value=50)
+humidity_input = st.number_input("Enter humidity (%):", min_value=0, max_value=100)
+sunshine_input = st.number_input("Enter sunshine (hours):", min_value=0, max_value=24)
+pressure_input = st.number_input("Enter pressure (hPa):", min_value=900, max_value=1100)
+maxtemp_input = st.number_input("Enter maximum temperature (°C):", min_value=-30, max_value=50)
+mintemp_input = st.number_input("Enter minimum temperature (°C):", min_value=-30, max_value=50)
+dewpoint_input = st.number_input("Enter dewpoint (°C):", min_value=-30, max_value=50)
+
+# Create a dataframe for the input data
+input_data = pd.DataFrame([[temperature_input, humidity_input, sunshine_input, pressure_input, maxtemp_input, mintemp_input, dewpoint_input]],
+                          columns=features)
+
+# Predict rain based on the user input
+prediction = model.predict(input_data)
+
+if prediction == 1:
+    st.write("Prediction: Rain is likely!")
+else:
+    st.write("Prediction: No rain expected.")
