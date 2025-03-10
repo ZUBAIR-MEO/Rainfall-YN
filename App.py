@@ -3,46 +3,60 @@ import pandas as pd
 import streamlit as st
 import os
 
-# Load model
-model_path = '/kaggle/working/rainfall_model.pkl'
+# Set paths for the model and scaler
+model_path = 'rainfall_model.pkl'
+scaler_path = 'scaler.pkl'
 
-# Check if model file exists before loading
-if os.path.exists(model_path):
+# Load the model and scaler if they exist
+if os.path.exists(model_path) and os.path.exists(scaler_path):
     model = joblib.load(model_path)
-    st.write("Model loaded successfully.")
+    scaler = joblib.load(scaler_path)
+    st.write("Model and Scaler loaded successfully.")
 else:
-    st.error(f"Model file not found at {model_path}")
-    raise FileNotFoundError(f"Model file not found at {model_path}")
+    st.error(f"Model or scaler files not found. Please check the paths: {model_path} and {scaler_path}")
+    raise FileNotFoundError("Model or scaler files not found.")
 
-# Define expected columns (from the model's training data)
+# Define the expected columns for the model
 expected_columns = ['temparature', 'cloud', 'day', 'maxtemp', 'winddirection', 'pressure', 'humidity']
 
-# New input data (ensure it has the same structure as the training data)
-new_data = pd.DataFrame({
-    'temparature': [22.5],
-    'cloud': [1],
-    'day': [2],
-    'maxtemp': [30.0],
-    'winddirection': [5],
-    'pressure': [1012],
-    'humidity': [85]
+# Title of the Streamlit app
+st.title('Rainfall Prediction App')
+
+# User inputs
+st.header("Enter Weather Data:")
+temparature = st.number_input("Temperature (°C)", min_value=-50.0, max_value=50.0, value=22.5)
+cloud = st.number_input("Cloudiness", min_value=0, max_value=8, value=1)
+day = st.number_input("Day (1=Monday, ..., 7=Sunday)", min_value=1, max_value=7, value=2)
+maxtemp = st.number_input("Maximum Temperature (°C)", min_value=-50.0, max_value=50.0, value=30.0)
+winddirection = st.number_input("Wind Direction", min_value=0, max_value=360, value=5)
+pressure = st.number_input("Pressure (hPa)", min_value=950, max_value=1050, value=1012)
+humidity = st.number_input("Humidity (%)", min_value=0, max_value=100, value=85)
+
+# Prepare the input data as a DataFrame
+input_data = pd.DataFrame({
+    'temparature': [temparature],
+    'cloud': [cloud],
+    'day': [day],
+    'maxtemp': [maxtemp],
+    'winddirection': [winddirection],
+    'pressure': [pressure],
+    'humidity': [humidity]
 })
 
-# Ensure the new data has the same columns as expected (both the same features and the correct order)
-missing_columns = set(expected_columns) - set(new_data.columns)
+# Ensure the input data has the correct column order and includes all the required features
+missing_columns = set(expected_columns) - set(input_data.columns)
 if missing_columns:
-    st.error(f"Missing columns in the new data: {missing_columns}")
-    raise ValueError(f"Missing columns in the new data: {missing_columns}")
+    st.error(f"Missing columns in the input data: {missing_columns}")
+    raise ValueError(f"Missing columns in the input data: {missing_columns}")
 else:
-    new_data = new_data[expected_columns]  # Reorder the columns to match the training data order
+    input_data = input_data[expected_columns]  # Reorder columns to match the training data order
 
-# Ensure the number of features in the new data matches what the model expects
-if new_data.shape[1] != len(expected_columns):
-    st.error(f"Expected {len(expected_columns)} features, but got {new_data.shape[1]} features in the new data.")
-    raise ValueError(f"Expected {len(expected_columns)} features, but got {new_data.shape[1]} features in the new data.")
+# Scale the input data using the preloaded scaler
+input_data_scaled = scaler.transform(input_data)
 
-# Make prediction
-prediction = model.predict(new_data)
+# Make the prediction using the model
+prediction = model.predict(input_data_scaled)
 
-# Display prediction
-st.write(f"Predicted rainfall: {prediction[0]}")
+# Display the result
+st.header("Prediction Result:")
+st.write(f"Predicted Rainfall: {prediction[0]:.2f} mm")
