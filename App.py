@@ -1,33 +1,47 @@
-import pandas as pd
 import joblib
+import pandas as pd
+import streamlit as st
 
-# Load the model and scaler
-model = joblib.load('rainfall_model.pkl')
-scaler = joblib.load('scaler.pkl')
+# Load model and scaler
+model_path = 'rainfall_model.pkl'
+scaler_path = 'scaler.pkl'
 
-# Define the column names used during model training
-expected_columns = ['temparature', 'cloud', 'day', 'maxtemp', 'winddirection', 'humidity', 'pressure', 'sunshine']
+# Check if model and scaler files exist before loading
+if os.path.exists(model_path) and os.path.exists(scaler_path):
+    model = joblib.load(model_path)
+    scaler = joblib.load(scaler_path)
+    st.write("Model and scaler loaded successfully.")
+else:
+    st.error(f"Model or scaler file not found at {model_path} or {scaler_path}")
+    raise FileNotFoundError(f"Model or scaler file not found at {model_path} or {scaler_path}")
 
-# Simulate user input (replace this with actual Streamlit inputs)
+# Define expected columns (from the model's training data)
+expected_columns = ['temparature', 'cloud', 'day', 'maxtemp', 'winddirection', 'pressure', 'humidity']
+
+# New input data (ensure it has the same structure as the training data)
 new_data = pd.DataFrame({
-    'temparature': [30],
-    'cloud': [20],
-    'day': [1],
-    'maxtemp': [35],
+    'temparature': [22.5],
+    'cloud': [1],
+    'day': [2],
+    'maxtemp': [30.0],
     'winddirection': [5],
-    'humidity': [60],
-    'pressure': [1015],
-    'sunshine': [8]
+    'pressure': [1012],
+    'humidity': [85]
 })
 
-# Ensure the input data has the same columns as expected
-new_data = new_data[expected_columns]  # Reorder columns to match the training data
+# Ensure the new data has the same columns as expected (both the same features and the correct order)
+if set(new_data.columns) == set(expected_columns):
+    new_data = new_data[expected_columns]  # Reorder the columns to match the training data order
+else:
+    missing_columns = set(expected_columns) - set(new_data.columns)
+    st.error(f"Missing columns in the new data: {missing_columns}")
+    raise ValueError(f"Missing columns in the new data: {missing_columns}")
 
 # Preprocess the new data (standardize using the same scaler)
 new_data_scaled = scaler.transform(new_data)
 
-# Make prediction using the trained model
+# Make prediction
 prediction = model.predict(new_data_scaled)
 
-# Output the prediction (this would be displayed in Streamlit)
-st.write(f"Predicted Rainfall: {prediction[0]}")
+# Display prediction
+st.write(f"Predicted rainfall: {prediction[0]}")
