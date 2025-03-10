@@ -16,8 +16,9 @@ else:
     st.error(f"Model or scaler files not found. Please check the paths: {model_path} and {scaler_path}")
     raise FileNotFoundError("Model or scaler files not found.")
 
-# Define the expected columns for the model
-expected_columns = ['temparature', 'cloud', 'day', 'maxtemp', 'winddirection', 'pressure', 'humidity']
+# Define the expected columns based on the training data
+expected_columns = ['day', 'pressure', 'maxtemp', 'temparature', 'mintemp', 'dewpoint', 
+                    'humidity', 'cloud', 'sunshine', 'winddirection', 'windspeed']
 
 # Title of the Streamlit app
 st.title('Rainfall Prediction App')
@@ -31,6 +32,10 @@ maxtemp = st.number_input("Maximum Temperature (°C)", min_value=-50.0, max_valu
 winddirection = st.number_input("Wind Direction", min_value=0, max_value=360, value=5)
 pressure = st.number_input("Pressure (hPa)", min_value=950, max_value=1050, value=1012)
 humidity = st.number_input("Humidity (%)", min_value=0, max_value=100, value=85)
+mintemp = st.number_input("Minimum Temperature (°C)", min_value=-50.0, max_value=50.0, value=18.0)
+dewpoint = st.number_input("Dewpoint (°C)", min_value=-50.0, max_value=50.0, value=15.0)
+sunshine = st.number_input("Sunshine Duration (hours)", min_value=0.0, max_value=24.0, value=8.0)
+windspeed = st.number_input("Windspeed (km/h)", min_value=0.0, max_value=200.0, value=15.0)
 
 # Prepare the input data as a DataFrame
 input_data = pd.DataFrame({
@@ -40,7 +45,11 @@ input_data = pd.DataFrame({
     'maxtemp': [maxtemp],
     'winddirection': [winddirection],
     'pressure': [pressure],
-    'humidity': [humidity]
+    'humidity': [humidity],
+    'mintemp': [mintemp],
+    'dewpoint': [dewpoint],
+    'sunshine': [sunshine],
+    'windspeed': [windspeed]
 })
 
 # Ensure the input data has the correct column order and includes all the required features
